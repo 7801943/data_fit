@@ -66,7 +66,7 @@ class M2DataFitting:
             fun=self.objective_func,
             x0=params0,
             args=(self.x, self.y),
-            method='slsqp',#使用powell可以用了
+            method='powell',#使用powell可以用了
             bounds=bounds)
         self.params = result.x
         print(result)
