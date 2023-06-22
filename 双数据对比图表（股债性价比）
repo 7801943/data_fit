@@ -1,0 +1,65 @@
+import pandas as pd
+import plotly.graph_objects as go
+
+
+def plot_dataframes(df1_path, df1_column, df2_path, df2_column, custom_function1, custom_function2, write_html=False):
+    # 读取DataFrame1
+    df1 = pd.read_excel(df1_path)
+    df1['日期'] = pd.to_datetime(df1['日期'])
+
+    # 读取DataFrame2
+    df2 = pd.read_excel(df2_path)
+    df2['日期'] = pd.to_datetime(df2['日期'])
+
+    # # 对df1和df2进行日期列的排序
+    # df1.sort_values('日期', inplace=True)
+    # df2.sort_values('日期', inplace=True)
+
+    # 应用自定义函数到df1和df2的指定列
+    df1['计算结果'] = df1[df1_column].apply(custom_function1)
+    df2['计算结果'] = df2[df2_column].apply(custom_function2)
+
+    # 创建图表
+    fig = go.Figure()
+
+    # 添加df1的数据到y1轴
+    fig.add_trace(go.Scatter(x=df1['日期'], y=df1['计算结果'], name=df1_column, yaxis='y1'))
+
+    # 添加df2的数据到y2轴
+    fig.add_trace(go.Scatter(x=df2['日期'], y=df2['计算结果'], name=df2_column, yaxis='y1'))
+
+    # 设置图表布局
+    fig.update_layout(
+        title='股债性价比（1/上证50历史PE vs 中债国债1年到期利率)',
+        xaxis_title='日期',
+        xaxis=dict(title = '日期', showgrid=True, showspikes=True),
+        yaxis=dict(title='收益率', side='left', showgrid=True, tickformat='.2%', zeroline=True),
+        #yaxis2=dict(title='中债国债1年到期利率走势分析', side='right', overlaying='y', showgrid=False, zeroline=False)
+        hovermode='x'
+        # xaxis=dict(showspikes=True),
+        # yaxis2=dict(showspikes=False)
+    )
+
+    # 保存图表为HTML文件
+    fig.show()
+    if write_html:
+        fig.write_html('股债性价比.html')
+
+
+# 示例用法
+df1_path = r'D:\PythonProjects\layui-admin\macro_chart\上证50历史PE(000016.SH)-月.xlsx'
+df1_column = '市盈率(TTM)'
+df2_path = r'D:\PythonProjects\layui-admin\macro_chart\中债国债1年到期利率走势分析-月.xlsx'
+df2_column = '利率'
+
+
+def pe_to_yield(x):  # 市盈率to收益率：取倒数
+    return 1 / x
+
+
+def to_percent(x):  # 取百分比
+    return x/100
+
+
+plot_dataframes(df1_path, df1_column, df2_path, df2_column, pe_to_yield, to_percent, True)
+# 调用函数生成图表
